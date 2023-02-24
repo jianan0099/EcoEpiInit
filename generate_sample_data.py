@@ -2,6 +2,8 @@ import pickle
 import numpy as np
 import pandas as pd
 
+def row_sum_n_col(array_, n_col):
+    return np.sum(np.reshape(array_, (-1, int(np.shape(array_)[1] / n_col), n_col)), axis=2)
 
 def generate_sample_MRIOT():
     with open('processed_gtap/regions_list.pkl', 'rb') as f:
@@ -15,9 +17,10 @@ def generate_sample_MRIOT():
     # v 141*65 1
 
     Z = np.random.rand(141 * 65, 141 * 65)
-    y = np.random.randint(10, 20, size=(141 * 65, 141))
-    x = np.sum(Z, axis=1) + np.sum(y, axis=1)
-    v = x - np.sum(Z, axis=0)
+    v = np.random.rand(141 * 65)
+    v_by_country = row_sum_n_col(np.reshape(v, (1, -1)), 65).flatten()
+    y = np.tile([1/(141*65)] * 141, (141*65, 1))
+    y = y * v_by_country[None, :]
     MRIOT = np.concatenate([np.concatenate([Z, y, np.reshape(x, (len(x), 1))], axis=1),
                             np.concatenate([np.reshape(v, (1, len(v))),
                                             np.ones((1, 141 + 1)) * np.nan], axis=1),
